@@ -56,9 +56,8 @@ spec:
                 exit 1
             fi
 
-            echo "Moving 'opm' to $INSTALL_DIR (requires sudo)..."
-            sudo mv "$TEMP_DIR/opm" "$INSTALL_DIR/"
-            sudo chmod +x "$INSTALL_DIR/opm"
+            mv "$TEMP_DIR/opm" "$INSTALL_DIR/"
+            chmod +x "$INSTALL_DIR/opm"
 
             if [ $? -ne 0 ]; then
                 echo "Error: Failed to move opm. Check your permissions."
