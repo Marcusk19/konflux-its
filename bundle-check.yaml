@@ -53,6 +53,9 @@ spec:
             echo "$bundles"
             echo ""
 
+            # Array to track missing images
+            missingImages=()
+
             for bundle in ${bundles[@]}; do
                 echo "=== Checking bundle: ${bundle} ==="
                 relatedImages=$(opm render ${bundle} | jq -r '.relatedImages[].image' | grep -Ev 'redis|postgresql|kube-rbac|bundle')
@@ -65,7 +68,7 @@ spec:
                     echo "Checking digest: $digest for image: $image"
                     if ! grep -q "$digest" <<< "$snapshotDigests"; then
                         echo "ERROR: Image ${image} (digest: ${digest}) from bundle ${bundle} is missing in the snapshot"
-                        exit 1
+                        missingImages+=("${image} (from bundle: ${bundle})")
                     else
                         echo "OK: Image ${image} (digest: ${digest}) is present in the snapshot"
                     fi
@@ -73,4 +76,15 @@ spec:
                 echo ""
             done
 
-            echo "=== All bundle images verified successfully ==="
+            # Check if there are any missing images
+            if [ ${#missingImages[@]} -gt 0 ]; then
+                echo "=== VERIFICATION FAILED ==="
+                echo "The following images from bundles are missing in the snapshot:"
+                echo ""
+                for missing in "${missingImages[@]}"; do
+                    echo "  - $missing"
+                done
+                exit 1
+            else
+                echo "=== All bundle images verified successfully ==="
+            fi
