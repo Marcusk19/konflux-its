@@ -1,0 +1,75 @@
+kind: Pipeline
+apiVersion: tekton.dev/v1beta1
+metadata:
+  name: bundle-check
+spec:
+  params:
+    - description:  'snapshot to check bundle refs'
+      name: SNAPSHOT
+      default: '{"components": [{"name":"test-app", "containerImage": "quay.io/example/repo:latest"}]}'
+      type: string
+  tasks:
+    - name: check-bundle-references
+      description: make sure snapshot references in bundles are up to date
+      params:
+        - name: SNAPSHOT
+          value: $(params.SNAPSHOT)
+      taskSpec:
+        params:
+        - name: SNAPSHOT
+        results:
+        - name: TEST_OUTPUT
+          description: Test output
+        steps:
+        - name: test-snapshot-component
+          image: registry.redhat.io/openshift4/ose-cli:latest
+          workingDir: /workspace
+          env:
+          - name: SNAPSHOT
+            value: $(params.SNAPSHOT)
+          script: |
+            #!/bin/bash
+            set -e
+
+            dnf install -y jq
+
+            echo "=== Extracting snapshot components ==="
+            snapshotComponents=$(jq -r '.spec.components[].containerImage' <<< ${SNAPSHOT})
+            echo "Snapshot components:"
+            echo "$snapshotComponents"
+            echo ""
+
+            # Extract digests from snapshot components
+            echo "=== Extracting digests from snapshot ==="
+            snapshotDigests=$(echo "$snapshotComponents" | grep -oE '@sha256:[a-f0-9]+')
+            echo "Snapshot digests:"
+            echo "$snapshotDigests"
+            echo ""
+
+            echo "=== Finding bundles ==="
+            bundles=$(echo "$snapshotComponents" | grep 'bundle' || true)
+            echo "Bundles found:"
+            echo "$bundles"
+            echo ""
+
+            for bundle in ${bundles[@]}; do
+                echo "=== Checking bundle: ${bundle} ==="
+                relatedImages=$(opm render ${bundle} | jq -r '.relatedImages.[].image' | grep -Ev 'redis|postgresql|kube-rbac|bundle')
+                echo "Related images:"
+                echo "$relatedImages"
+                echo ""
+
+                for image in ${relatedImages[@]}; do
+                    digest=$(echo "$image" | grep -oE '@sha256:[a-f0-9]+')
+                    echo "Checking digest: $digest for image: $image"
+                    if ! grep -q "$digest" <<< "$snapshotDigests"; then
+                        echo "ERROR: Image ${image} (digest: ${digest}) from bundle ${bundle} is missing in the snapshot"
+                        exit 1
+                    else
+                        echo "OK: Image ${image} (digest: ${digest}) is present in the snapshot"
+                    fi
+                done
+                echo ""
+            done
+
+            echo "=== All bundle images verified successfully ==="
