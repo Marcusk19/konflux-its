@@ -34,7 +34,7 @@ spec:
             dnf install -y jq
 
             echo "=== Extracting snapshot components ==="
-            snapshotComponents=$(jq -r '.spec.components[].containerImage' <<< ${SNAPSHOT})
+            snapshotComponents=$(jq -c '.spec.components[].containerImage' <<< "${SNAPSHOT}")
             echo "Snapshot components:"
             echo "$snapshotComponents"
             echo ""
