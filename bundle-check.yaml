@@ -68,7 +68,7 @@ spec:
             rm -rf "$TEMP_DIR"
 
             echo "=== Extracting snapshot components ==="
-            snapshotComponents=$(jq -c '.components[].containerImage' <<< "${SNAPSHOT}")
+            snapshotComponents=$(jq -r '.components[].containerImage' <<< "${SNAPSHOT}")
             echo "Snapshot components:"
             echo "$snapshotComponents"
             echo ""
@@ -88,7 +88,7 @@ spec:
 
             for bundle in ${bundles[@]}; do
                 echo "=== Checking bundle: ${bundle} ==="
-                relatedImages=$(opm render ${bundle} | jq -r '.relatedImages.[].image' | grep -Ev 'redis|postgresql|kube-rbac|bundle')
+                relatedImages=$(opm render ${bundle} | jq -r '.relatedImages[].image' | grep -Ev 'redis|postgresql|kube-rbac|bundle')
                 echo "Related images:"
                 echo "$relatedImages"
                 echo ""
