@@ -23,7 +23,7 @@ spec:
           description: Test output
         steps:
         - name: test-snapshot-component
-          image: registry.redhat.io/openshift4/ose-cli:latest
+          image: quay.io/konflux-ci/operator-sdk-builder:latest
           workingDir: /workspace
           env:
           - name: SNAPSHOT
@@ -32,42 +32,7 @@ spec:
             #!/bin/bash
             set -e
 
-            dnf install -y jq podman
-            
-            podman login quay.io
-
-            DOWNLOAD_URL="https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-4.9/opm-linux-4.9.59.tar.gz"
-            FILENAME="opm-linux.tar.gz"
-            INSTALL_DIR="/usr/local/bin"
-            TEMP_DIR=$(mktemp -d)
-
-            echo "Starting opm CLI installation..."
-            echo "Downloading $FILENAME..."
-            curl -L "$DOWNLOAD_URL" -o "$TEMP_DIR/$FILENAME"
-
-            if [ $? -ne 0 ]; then
-                echo "Error: Download failed."
-                exit 1
-            fi
-
-            echo "Extracting the opm binary..."
-            tar -xzvf "$TEMP_DIR/$FILENAME" -C "$TEMP_DIR"
-
-            if [ $? -ne 0 ]; then
-                echo "Error: Extraction failed."
-                exit 1
-            fi
-
-            mv "$TEMP_DIR/opm" "$INSTALL_DIR/"
-            chmod +x "$INSTALL_DIR/opm"
-
-            if [ $? -ne 0 ]; then
-                echo "Error: Failed to move opm. Check your permissions."
-                exit 1
-            fi
-
-            echo "Cleaning up temporary files..."
-            rm -rf "$TEMP_DIR"
+            dnf install -y jq 
 
             echo "=== Extracting snapshot components ==="
             snapshotComponents=$(jq -r '.components[].containerImage' <<< "${SNAPSHOT}")
