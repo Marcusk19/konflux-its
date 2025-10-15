@@ -6,7 +6,7 @@ spec:
   params:
     - description:  'snapshot to check bundle refs'
       name: SNAPSHOT
-      default: '{"spec": {"components": [{"name":"test-app", "containerImage": "quay.io/example/repo:latest"}]}}'
+      default: '{"components": [{"name":"test-app", "containerImage": "quay.io/example/repo:latest"}]}'
       type: string
   tasks:
     - name: check-bundle-references
@@ -34,10 +34,8 @@ spec:
 
             dnf install -y jq
 
-            echo ${SNAPSHOT}
-
             echo "=== Extracting snapshot components ==="
-            snapshotComponents=$(jq -c '.spec.components[].containerImage' <<< "${SNAPSHOT}")
+            snapshotComponents=$(jq -c '.components[].containerImage' <<< "${SNAPSHOT}")
             echo "Snapshot components:"
             echo "$snapshotComponents"
             echo ""
