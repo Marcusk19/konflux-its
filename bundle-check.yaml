@@ -6,7 +6,7 @@ spec:
   params:
     - description:  'snapshot to check bundle refs'
       name: SNAPSHOT
-      default: '{"components": [{"name":"test-app", "containerImage": "quay.io/example/repo:latest"}]}'
+      default: '{"spec": {"components": [{"name":"test-app", "containerImage": "quay.io/example/repo:latest"}]}}'
       type: string
   tasks:
     - name: check-bundle-references
@@ -17,6 +17,7 @@ spec:
       taskSpec:
         params:
         - name: SNAPSHOT
+          type: string
         results:
         - name: TEST_OUTPUT
           description: Test output
