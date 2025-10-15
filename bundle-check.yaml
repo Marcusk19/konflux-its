@@ -34,7 +34,7 @@ spec:
 
             dnf install -y jq
 
-            DOWNLOAD_URL="https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-4.9/opm-linux.tar.gz"
+            DOWNLOAD_URL="https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-4.9/opm-linux-4.9.59.tar.gz"
             FILENAME="opm-linux.tar.gz"
             INSTALL_DIR="/usr/local/bin"
             TEMP_DIR=$(mktemp -d)
