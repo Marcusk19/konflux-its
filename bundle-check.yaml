@@ -32,7 +32,9 @@ spec:
             #!/bin/bash
             set -e
 
-            dnf install -y jq
+            dnf install -y jq podman
+            
+            podman login quay.io
 
             DOWNLOAD_URL="https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest-4.9/opm-linux-4.9.59.tar.gz"
             FILENAME="opm-linux.tar.gz"
